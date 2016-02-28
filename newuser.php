@@ -85,25 +85,6 @@ function sanitize($data) {
 
 if ($_POST) {
   //CONSUUUUME aka grab and store data
-
-  $uname = $_POST["uname"];
-  $email = $_POST["email"];
-  $address = $_POST["address"];
-  $postal = $_POST["postal"];
-  $city = $_POST["city"];
-  $country = $_POST["country"];
-  $phone = $_POST["phone"];
-  $bio = $_POST["bio"];
-  $uname = sanitize($uname);
-  $email = sanitize($email);
-  $address = sanitize($address);
-  $postal = sanitize($postal);
-  $city = sanitize($city);
-  $country = sanitize($country);
-  $bio = sanitize($bio);
-
-
-
   //regex for uname - 5-20 chars no nums or special chars
   if (!preg_match($unamePattern,$uname) || empty($uname)) {
     echo "<div class=\"alert alert-danger\"><strong>Username must be 5-15 characters only </strong> </div>";
@@ -130,21 +111,8 @@ if ($_POST) {
 
 
 //connect to the db with magic
-$dbc = pg_connect("host=localhost dbname=ssd user=omalax password=ssd")
-    or die("Can't connect to database".pg_last_error());
-
-$query = "INSERT INTO users(uname, email, address, postal, city, country, phone, bio)
-                  VALUES('$uname', '$email', '$address', '$postal', '$city', '$country', '$phone', '$bio');";
-
 //only submit if valid and submit has been clicked
 //can proooooooobably be broken but so can most of this site
-
-if ($valid == 1 && $_POST){
-$result = pg_query($dbc,$query);
-//echo "Congrats, ".$uname." You have successfully registered.";
-echo "<div class=\"alert alert-success\"><strong>"."Congrats, ".$uname." You have successfully registered.</strong> </div>";
-pg_close($dbc);
-}
 
 
 ?>
