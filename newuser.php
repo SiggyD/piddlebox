@@ -2,7 +2,7 @@
 Nebo n Dabe
 Secure Software Development
 Assignment 2
-MArch 3 2016
+March 3 2016
 -->
 
 <html>
@@ -34,7 +34,7 @@ MArch 3 2016
 <input type="text" name="uname" placeholder="Username..." class="form-control" id="uname">
 </div>
   <div class="form-group">
-<input type="text" name="email" placeholder="Email..." class="form-control" id="email">
+<input type="email" name="email" placeholder="Email..." class="form-control" id="email">
   </div>
   <div class="form-group">
 <input type="text" name="address" placeholder="Address..." class="form-control" id="address">
@@ -49,7 +49,7 @@ MArch 3 2016
 <input type="text" name="country" placeholder="Country..." class="form-control" id="country">
 </div>
 <div class="form-group">
-<input type="text" name="phone" placeholder="Phone Number..." class="form-control" id="phone">
+<input type="phone" name="phone" placeholder="Phone Number..." class="form-control" id="phone">
 </div>
 <div class="form-group">
 <textarea name="bio" rows="5" wrap="hard" placeholder="A little something about yourself..." class="form-control" id="bio"></textarea>
