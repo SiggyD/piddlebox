@@ -13,7 +13,7 @@
 	<nav class="navbar navbar-default">
 		<div class="container-fluid">
 			<div class="navbar-header">
-				<a class="navbar-brand" href="newuser.php">Secure Web Portal</a>
+				<a class="navbar-brand" href="index.html">Secure Web Portal</a>
 			</div>
 			<ul class="nav navbar-nav">
 				<li class="active"><a href="newuser.php">New User</a></li>
@@ -62,11 +62,11 @@
 											echo "<div class=\"alert alert-danger\"><strong>Email should be of form: username@domain.tld </strong> </div>";
 											$valid = 0; 
 										}
-										if (!empty($password) && empty($passwordConf)) {
+										if (empty($password) || empty($passwordConf)) {
 											echo "<div class=\"alert alert-danger\"><strong>Password can not be empty.</strong> </div>";
 											$valid = 0; 
 										}
-										if ($password != $passwordConf)
+										if (strcmp($password,$passwordConf) != 0)
 										{
 											echo "<div class=\"alert alert-danger\"><strong>Passwords must match</strong> </div>";
 											$valid = 0; 
