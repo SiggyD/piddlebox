@@ -78,33 +78,71 @@
 							</form></td>
 							<td>
 								<?php
-									//VALIDATION PATTERNS
-									
-									$usernamePattern = "/^[a-zA-Z]{5,15}$/";
-									$emailPattern = "/^[a-zA-Z0-9-.]+\@[a-zA-Z0-9]+\.[a-zA-Z\.]{2,7}$/";
-									$valid = 1;
-									if ($_POST) {
+								
+$valid;
+if ($_SERVER['REQUEST_METHOD'] == 'POST') //small check to ensure request was post, hopefully indicating form data
+	{
+		$valid = 0;
+//collect posted data & validate
+//username		
+		$username = trim($_POST["username"]);
+		$username = stripSpecial($username);
+		if (!preg_match("/^[a-zA-Z]{2,20}$/",$username))
+		{
+			echo "<div class=\"alert alert-danger\"><strong>Username must be between 5-20 characters</strong> </div>";
+			$valid = 1;
+		}
+//email		
+		$email = trim($_POST["email"]);
+		$email = stripSpecial($email );
+		if (!preg_match("/^[a-zA-Z.-_]+\@[a-zA-Z-_]+\.[a-zA-Z\.]{2,3}$/",$email))
+		{
+			echo "<div class=\"alert alert-danger\"><strong>Please input a valid email</strong> </div>";
+			$valid = 1;
+		}
+		$email = trim($_POST["email"]);
+//password
+		$password = trim($_POST["password"]);
+		$passwordConf = trim($_POST["passwordConf"]);
+		if (empty($password) || empty($passwordConf)) 
+		{
+			echo "<div class=\"alert alert-danger\"><strong>Password can not be empty.</strong> </div>";
+			$valid = 1; 
+		}
+		if (strcmp($password,$passwordConf) != 0)
+		{
+			echo "<div class=\"alert alert-danger\"><strong>Passwords must match.</strong> </div>";
+			$valid = 1; 
+		}
+	
+//db do
+		if($valid == 0)
+		{
+			$insertResult = pg_query($insertStatement);
+			echo "<script type='text/javascript'> alert('User Added!')</script>";
+		}
+	}
+	function stripSpecial($string)	//get rid of comment chars.
+	{
+		$string = str_replace("#","",$string);
+		$string = str_replace("--","",$string);
+		return $string;		
+	}
+	
+	function cleanInput($string,$name,$required)
+	{
+		if ($required ==1 && strlen($string) < 1)//check if actually there
+		{
+			echo("<li>".$name." is a required field.");
+			$valid = 1;
+		}
+		
+		$string = makeDBSafe($string);
+		$string = urlencode($string);
+		return $string;
+	}
 
-										if (!preg_match($usernamePattern,$username) || empty($username)) {
-											echo "<div class=\"alert alert-danger\"><strong>Username must be 5-15 characters only </strong> </div>";
-											$valid = 0; 
-										}
-										if (!preg_match($emailPattern,$email) || empty($email)) {
-											echo "<div class=\"alert alert-danger\"><strong>Email should be of form: username@domain.tld </strong> </div>";
-											$valid = 0; 
-										}
-										if (empty($password) || empty($passwordConf)) {
-											echo "<div class=\"alert alert-danger\"><strong>Password can not be empty.</strong> </div>";
-											$valid = 0; 
-										}
-										if (strcmp($password,$passwordConf) != 0)
-										{
-											echo "<div class=\"alert alert-danger\"><strong>Passwords must match</strong> </div>";
-											$valid = 0; 
-										}
-										
-										
-									}
+									
 
 								?>
 							</td></tr></table></div>
