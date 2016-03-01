@@ -78,7 +78,7 @@
 	} else {
 		$token = $_SESSION['token'];
 }
-		echo $token;
+		#echo $token;
 	?>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
 	<input type="hidden" name="token" value="<?php echo $token; ?>" />
