@@ -136,9 +136,12 @@
 									$string = urlencode($string);
 									return $string;
 								}
+<<<<<<< HEAD
 								
 								
 								
+=======
+>>>>>>> a95a0c793abac4f540eaf155c30b74432979ca01
 							?>
 						</td></tr></table></div>
 				</body>
