@@ -15,7 +15,7 @@
 		<meta name="description" content="">
 		<meta name="author" content="">
 		<link rel="icon" href="../../favicon.ico">
-		<title>New User</title>
+		<title>Piddlebox</title>
 		<link href="../../dist/css/bootstrap.min.css" rel="stylesheet">
 		<link href="../../assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
 		<link href="starter-template.css" rel="stylesheet">
@@ -52,10 +52,10 @@
 			
 			<div class="starter-template">
 				
-				<p class="lead">Register</p>
+				<p class="lead">Your Profile</p>
 			</div>
 			<div align="center" class="panel panel-primary">
-				<div align="left" class="panel-body"><strong ">Register<strong></div>
+				<div align="left" class="panel-body"><strong ">User Profile<strong></div>
 					
 					<table class="table-condensed"><tr><td>
 						<form class="registration-form" role="form" action="newuser.php" method="POST">
@@ -70,6 +70,9 @@
 							</div>
 							<div class="form-group">
 								<input type="password" name="passwordConf" placeholder="Retype Password..." class="form-control" id="passwordConf"required>
+							</div>
+							<div class="form-group">
+								<input type="file" name="avatar" class="form-control" id="avatar">
 							</div>
 							<button type="submit" class="btn btn-primary">Submit</button>
 						</form></td>
@@ -116,15 +119,10 @@
 									}
 									
 									////////////////////////////////db do
-									if($valid == 0)
+									if(false)
 									{	
 										#$salt = base64_encode(openssl_random_pseudo_bytes(20));
 										$hash =  password_hash($password.$username,PASSWORD_DEFAULT);
-										#DEBUG INFO						
-										#echo "<br>username: ".$username;
-										#echo "<br>email: ".$email;
-										#echo "<br>hash: ".$hash;
-										#DEBUG INFO 
 										$db = pg_connect('host=localhost dbname=ssd user=sig password=ssd');
 										$insertStatement = "INSERT INTO piddle (username, email, passhash) VALUES ('" . $username . "','" . $email . "','" . $hash . "');";
 										//DO
