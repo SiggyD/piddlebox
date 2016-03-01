@@ -123,7 +123,7 @@
 										#echo "<br>email: ".$email;
 										#echo "<br>hash: ".$hash;
 										#DEBUG INFO 
-										$db = pg_connect('host=localhost dbname=ssd user=sig password=ssd');
+										$db = pg_connect('host=localhost dbname= user= password=');
 										$insertStatement = "INSERT INTO piddle (username, email, passhash) VALUES ('" . $username . "','" . $email . "','" . $hash . "');";
 										//DO
 										$insertResult = pg_query($insertStatement);
