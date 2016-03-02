@@ -12,7 +12,7 @@
 		<input type="password" id="inputPassword" name="password" class="form-control" placeholder="Password" required>
 		<div class="checkbox">
 			<label>
-				<input type="checkbox" value="remember-me"> Remember me <br>New to Piddlebox? <a href=newuser.php> Register Here</a> 
+				<input type="checkbox" value="remember-me"> Remember me <br>New to Piddlebox? <a href=newuser.php> Register Here</a>
 			</label>
 		</div>
 		<?php session_start();
@@ -29,7 +29,9 @@
 	<?php
 		if ((!empty($_POST))) // remember these?
 		{
-			$db = pg_connect('host=localhost dbname=ssd user=sig password=ssd')
+      $emaillog = $_POST['email'];
+      $file = '/var/www/log/auth.log';
+			$db = pg_connect('host=localhost dbname=ssd user=omalax password=ssd')
 			or die("Can't connect to database".pg_last_error());
 			if (!pg_prepare($db,'login_select', 'SELECT * FROM piddle WHERE email = $1')) {
 				die("Can't prepare" . pg_last_error());
@@ -39,47 +41,57 @@
 			$result = pg_execute($db, 'login_select', array($email));
 			$row = pg_fetch_assoc($result);
 			if ($row['authFails'] < 5){
-				
+
 				$storedpassword = $row['passhash'];
-				$user = $row['username'];
-				$hashed_password = password_hash($password.$user,PASSWORD_DEFAULT);
+				$username = $row['username'];
+				$hashed_password = password_hash($password.$username,PASSWORD_DEFAULT);
 				#your code is not getting down here
-				if (isset($_POST['password']) && password_verify($password.$user, $storedpassword)) {
+				if (isset($_POST['password']) && password_verify($password.$username, $storedpassword)) {
 					echo 'Password is valid!';
-					$_SESSION['user'] = $user;
-					} 
-					else 
+					$_SESSION['user'] = $username;
+					}
+					else
 					{
 						echo "<div class=\"alert alert-danger\">Invalid Password.</div>";
 						if (!pg_prepare($db, 'authfail_update', 'UPDATE piddle SET "authFails" = "authFails"+1 WHERE username = $1 RETURNING "authFails"')) {
 						die("Can't prepare" . pg_last_error());
-						$file = '/var/www/log/auth.log';
-						$succ = file_put_contents($file,date(DATE_RFC2822).": User has failed to authenticate with username  ".$username." from ".$_SERVER['REMOTE_ADDR']."\n", FILE_APPEND);
-					}
+						if ((!empty($_POST))){
+						$succ = file_put_contents($file,date(DATE_RFC2822).": User has failed to authenticate with email  ".$emaillog." from ".$_SERVER['REMOTE_ADDR']."\n", FILE_APPEND);
+          }
+          }
 					#$updateResult = pg_query($db,$authFailUpdate);";
 					#echo "STUFFFFFFFFFFF: ".$updateResult;
-					$updateResult = pg_execute($db, 'authfail_update', array($user));
+					$updateResult = pg_execute($db, 'authfail_update', array($username));
 					$urow = pg_fetch_assoc($updateResult);
 					$fails = $urow['authFails'];
 					#echo "FAILS:  ".$fails;
 					if ($fails == 5)
 					{
 						echo "<div class=\"alert alert-danger\">Your Account Has Been Locked Due to 5 Login Failures.</div>";
-					} 
-					else 
-					{
-						echo "You have ".$fails."authorization failures";
-						echo "<div class=\"alert alert-danger\">You have ".$fails."authorization failures</div>";
+						$succ = file_put_contents($file,date(DATE_RFC2822).":ACCOUNT LOCK:User has failed to authenticate with email  ".$emaillog." from ".$_SERVER['REMOTE_ADDR']."\n", FILE_APPEND);
 					}
+					else
+					{
+						#echo "You have ".$fails."authorization failures";
+            if ((!empty($_POST))){
+						echo "<div class=\"alert alert-danger\">You have ".$fails."authorization failures</div>";
+            $triesremaining = 5 - $fails;
+						$succ = file_put_contents($file,date(DATE_RFC2822).": User has failed to authenticate with email  ".$emaillog." from ".$_SERVER['REMOTE_ADDR']." - ".$triesremaining." tries remaining."."\n", FILE_APPEND);
+          }
+          }
 				}
 				} else {
+          if ((!empty($_POST))){ // remember these?
+
+          $succ = file_put_contents($file,date(DATE_RFC2822).":ACCOUNT LOCKED:User has failed to authenticate with email  ".$emaillog." from ".$_SERVER['REMOTE_ADDR']."\n", FILE_APPEND);
+
 				echo "<div class=\"alert alert-danger\">Your Account is locked! Please request a password reset.</div>";
-			}
+      }
+      }
 		}
 	?>
 </div>
 <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
 </body>
 </html>
-
 
