@@ -1,5 +1,5 @@
-<?php 
-include 'header.php';	
+<?php
+include 'header.php';
 ?>
 		 <!-- Custom styles for this template -->
     <link href="signin.css" rel="stylesheet">
@@ -12,7 +12,7 @@ include 'header.php';
 				<input type="password" id="inputPassword" name="password" class="form-control" placeholder="Password" required>
 				<div class="checkbox">
 					<label>
-						<input type="checkbox" value="remember-me"> Remember me
+						<input type="checkbox" value="remember-me"> Remember me <br>New to Piddlebox? <a href=newuser.php> Register Here</a> 
 					</label>
 				</div>
 				<?php session_start();
@@ -28,16 +28,22 @@ include 'header.php';
 			</form>
 			<?php
 			if ((!empty($_POST))) // remember these?
-				{ 
+				{
 					$db = pg_connect('host=localhost dbname=ssd user=omalax password=ssd')
 					or die("Can't connect to database".pg_last_error());
-					$email = $_POST["email"];
-					$password = $_POST["password"];	
-					$query = "select * from piddle where email like '".$email."';";
-					$result = pg_query($db,$query);
+          #$result = pg_prepare($db,'login_select', 'SELECT * FROM piddle WHERE email = $1');
+          if (!pg_prepare($db,'login_select', 'SELECT * FROM piddle WHERE email = $1')) {
+              die("Can't prepare" . pg_last_error());
+          }
+          $email = $_POST["email"];
+					$password = $_POST["password"];
+          $result = pg_execute($db, 'login_select', array($email));
+					#$query = "select * from piddle where email like '".$email."';";
+					#$result = pg_query($db,$query);
 					$row = pg_fetch_assoc($result);
+          #echo $row['authFails'];
 					if ($row['authFails'] < 5){
-				
+
 						$storedpassword = $row['passhash'];
 						$user = $row['username'];
 						$hashed_password = password_hash($password.$user,PASSWORD_DEFAULT);
@@ -46,23 +52,32 @@ include 'header.php';
     							echo 'Password is valid!';
 							$_SESSION['user'] = $user;
 						} else {
-    							echo 'Invalid password.';
-							$authFailUpdate = "UPDATE PIDDLE SET \"authFails\" = \"authFails\"+1 WHERE username = '".$user."' RETURNING \"authFails\";";	
-							$updateResult = pg_query($db,$authFailUpdate);
-							$urow = pg_fetch_assoc($updateResult);
+    							  echo "<div class=\"alert alert-danger\">Invalid Password.</div>";
+							#$authFailUpdate = "UPDATE PIDDLE SET \"authFails\" = \"authFails\"+1 WHERE username = '".$user."' RETURNING \"authFails\";";
+              #$updateResult = pg_prepare($db, 'authfail_update', 'UPDATE piddle SET authFails = authFails+1 WHERE username = $1 RETURNING authFails');
+              if (!pg_prepare($db, 'authfail_update', 'UPDATE piddle SET "authFails" = "authFails"+1 WHERE username = $1 RETURNING "authFails"')) {
+                  die("Can't prepare" . pg_last_error());
+              }
+              #$updateResult = pg_query($db,$authFailUpdate);";
+              #echo "STUFFFFFFFFFFF: ".$updateResult;
+              $updateResult = pg_execute($db, 'authfail_update', array($user));
+              $urow = pg_fetch_assoc($updateResult);
 							$fails = $urow['authFails'];
-							if ($fails = 5){
-								echo "Your Account Has Been Locked Due to 5 Login Failures.";							
+              #echo "FAILS:  ".$fails;
+							if ($fails == 5){
+                echo "<div class=\"alert alert-danger\">Your Account Has Been Locked Due to 5 Login Failures.</div>";
 							} else {
 								echo "You have ".$fails."authorization failures";
+                echo "<div class=\"alert alert-danger\">You have ".$fails."authorization failures</div>";
 							}
 							}
 					    	} else {
-						echo 'Your Account is locked! Please request a password reset.';			
+            echo "<div class=\"alert alert-danger\">Your Account is locked! Please request a password reset.</div>";
 					}
 				}
 			?>
-		</div> 
+		</div>
 		<script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
 	</body>
 </html>
+
