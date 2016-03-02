@@ -1,14 +1,14 @@
 <?php include 'header.php';?>
-		
+
 		<div class="container">
-			
+
 			<div class="starter-template">
-				
+
 				<p class="lead">Register</p>
 			</div>
 			<div align="center" class="panel panel-primary">
-				<div align="left" class="panel-body"><strong ">Register<strong></div>
-					
+				<div align="left" class="panel-body"><strong><strong></div>
+
 					<table class="table-condensed"><tr><td>
 						<form class="registration-form" role="form" action="newuser.php" method="POST">
 							<div class="form-group">
@@ -33,7 +33,7 @@
 								{
 									$valid = 0;
 									//collect posted data & validate
-									//username		
+									//username
 									$username = trim($_POST["username"]);
 									$username = stripSpecial($username);
 									if (!preg_match("/^[a-zA-Z]{2,20}$/",$username))
@@ -41,8 +41,8 @@
 										echo "<div class=\"alert alert-danger\">Username must be between 2-20 characters</div>";
 										$valid = 1;
 									}
-									//email	
-										
+									//email
+
 									$email = trim($_POST["email"]);
 									$email = stripSpecial($email );
 									if (!preg_match("/^[a-zA-Z.-_]+\@[a-zA-Z-_]+\.[a-zA-Z\.]{2,3}$/",$email))
@@ -52,45 +52,49 @@
 									}
 									$email = trim($_POST["email"]);
 									//password
-									
+
 									$password = trim($_POST["password"]);
 									$passwordConf = trim($_POST["passwordConf"]);
-									if (empty($password) || empty($passwordConf)) 
+									if (empty($password) || empty($passwordConf))
 									{
 										echo "<div class=\"alert alert-danger\">Password can not be empty.</div>";
-										$valid = 1; 
+										$valid = 1;
 									}
-									
+
 									if (strcmp($password,$passwordConf) != 0)
 									{
 										echo "<div class=\"alert alert-danger\">Passwords must match.</div>";
-										$valid = 1; 
+										$valid = 1;
 									}
-									
+
 									////////////////////////////////db do
 									if($valid == 0)
-									{	
+									{
 										#$salt = base64_encode(openssl_random_pseudo_bytes(20));
 										$hash =  password_hash($password.$username,PASSWORD_DEFAULT);
-										$db = pg_connect('host=localhost dbname=ssd user=sig password=ssd');
-										$insertStatement = "INSERT INTO piddle (username, email, passhash) VALUES ('" . $username . "','" . $email . "','" . $hash . "');";
+										$db = pg_connect('host=localhost dbname=ssd user=omalax password=ssd');
+										if (!pg_prepare($db, 'new_user_insert', 'INSERT INTO piddle (username, email, passhash, "authFails") VALUES ($1,$2,$3,9) ')) {
+			                  die("Can't prepare" . pg_last_error());
+			              }
+										$insertStatement = pg_execute($db, 'new_user_insert', array($username,$email,$hash));
+										#$insertStatement = "INSERT INTO piddle (username, email, passhash) VALUES ('" . $username . "','" . $email . "','" . $hash . "');";
 										//DO
 										//placeholder for insertion of key into activation table
-										$insertResult = pg_query($insertStatement);
+										#$insertResult = pg_query($insertStatement);
 										echo "<script type='text/javascript'> alert('User Added!')</script>";
 										$logEntry = microtime()."- User ".$username." has registered.";
 										$file = '/var/www/log/registration.log';
 										$succ = file_put_contents($file,date(DATE_RFC2822).": User ".$username." has registered from ".$_SERVER['REMOTE_ADDR']."\n", FILE_APPEND);
 									}
-									
+
 								}
 								function stripSpecial($string)	//get rid of comment chars.
 								{
 									$string = str_replace("#","",$string);
 									$string = str_replace("--","",$string);
-									return $string;		
+									return $string;
 								}
-								
+
 								function cleanInput($string,$name,$required)
 								{
 									if ($required ==1 && strlen($string) < 1)//check if actually there
@@ -98,7 +102,7 @@
 										echo("<li>".$name." is a required field.");
 										$valid = 1;
 									}
-									
+
 									$string = makeDBSafe($string);
 									$string = urlencode($string);
 									return $string;
@@ -108,4 +112,4 @@
 						</td></tr></table></div>
 				</body>
 			</html>
-				
+
