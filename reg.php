@@ -33,7 +33,11 @@ if ((!empty($_GET))) //small check to ensure request was post, hopefully indicat
 		$updateResult = pg_execute($db, 'token_update', array($id));	
 	}
 
-	header('Location: /index.php');
+	header('Location: index.php');
 	#header('Location: piddlebox/index.php');
+}
+else
+{
+	header('Location: index.php');
 }
 ?>

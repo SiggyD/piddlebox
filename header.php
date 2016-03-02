@@ -43,7 +43,8 @@
             <li><a href="newuser.php">Register</a></li>
             <li><a href="myprofile.php">My Profile</a></li>
             <li><a href="about.php">About</a></li>
-          </ul>
+            <li><a href="logout.php">Logout</a></li>
+          </ul></div>
         </div><!--/.nav-collapse -->
       </div>
     </nav>
