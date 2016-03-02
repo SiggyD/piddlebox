@@ -42,13 +42,13 @@
 
     <div class="container">
 
-      <form class="form-signin">
+      <form class="form-signin" action="login.php" method="POST">
 
         <h2 class="form-signin-heading">Please sign in</h2>
         <label for="inputEmail" class="sr-only">Email address</label>
-        <input type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
+        <input type="email" id="inputEmail" name="email" class="form-control" placeholder="Email address" required autofocus>
         <label for="inputPassword" class="sr-only">Password</label>
-        <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
+        <input type="password" id="inputPassword" name="password" class="form-control" placeholder="Password" required>
         <div class="checkbox">
           <label>
             <input type="checkbox" value="remember-me"> Remember me
@@ -65,7 +65,27 @@
         <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
 	<input type="hidden" name="token" value="<?php echo $token; ?>" />
       </form>
-	
+	<?php $db = pg_connect("host= dbname= user= password=")
+    or die("Can't connect to database".pg_last_error());
+	$email = $_POST["email"];
+	$password = $_POST["password"];	
+	#echo $email;
+	#echo $password;
+	$query = "select passhash, username from piddle where email like '".$email."';";
+	$result = pg_query($db,$query);
+	$row = pg_fetch_assoc($result);
+	$storedpassword = $row['passhash'];
+	$user = $row['username'];
+	echo $user." ";	
+	echo $storedpassword." ";
+	$hashed_password = password_hash($password.$user,PASSWORD_DEFAULT);
+	echo "--".$hashed_password."--";
+	if (hash_equals($storedpassword, $hashed_password)) {
+   	echo "Password verified!";
+	} else {
+	echo "Password no good!";	
+	}
+?>
     </div> <!-- /container -->
 
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
