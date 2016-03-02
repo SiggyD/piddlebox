@@ -70,25 +70,18 @@
 					or die("Can't connect to database".pg_last_error());
 					$email = $_POST["email"];
 					$password = $_POST["password"];	
-					#echo $email;
-					#echo $password;
 					$query = "select passhash, username from piddle where email like '".$email."';";
 					$result = pg_query($db,$query);
 					$row = pg_fetch_assoc($result);
 					$storedpassword = $row['passhash'];
 					$user = $row['username'];
-					echo $user." ";	
-					echo $storedpassword." ";
 					$hashed_password = password_hash($password.$user,PASSWORD_DEFAULT);
-					echo "--".$hashed_password."--";
 					#your code is not getting down here
-					if (hash_equals($storedpassword, $hashed_password)) 
-					{
-						echo "Password verified!";
-					} 
-					else 
-					{
-						echo "Password no good!";	
+					if (isset($_POST['password']) && password_verify($password.$user, $storedpassword)) {
+    						echo 'Password is valid!';
+						$_SESSION['user'] = $user;
+					} else {
+    						echo 'Invalid password.';
 					}
 				}
 			?>
