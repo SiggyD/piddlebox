@@ -23,9 +23,19 @@
 							<div class="form-group">
 								<input type="password" name="passwordConf" placeholder="Retype Password..." class="form-control" id="passwordConf"required>
 							</div>
+							<?php session_start();
+								if (!isset($_SESSION['token'])) {
+									$_SESSION['token'] = bin2hex(openssl_random_pseudo_bytes(32));
+									} else {
+									$token = $_SESSION['token'];
+								}
+								#echo $token;
+							?>
+							<input type="hidden" name="token" value="<?php echo $token; ?>" />
 							<button type="submit" class="btn btn-primary">Submit</button>
 						</form></td>
 						<td>
+
 							<?php
 								$valid;
 								#if ($_SERVER['REQUEST_METHOD'] == 'POST') //small check to ensure request was post, hopefully indicating form data
@@ -73,10 +83,20 @@
 										#$salt = base64_encode(openssl_random_pseudo_bytes(20));
 										$hash =  password_hash($password.$username,PASSWORD_DEFAULT);
 										$db = pg_connect('host=localhost dbname=ssd user=omalax password=ssd');
-										if (!pg_prepare($db, 'new_user_insert', 'INSERT INTO piddle (username, email, passhash, "authFails") VALUES ($1,$2,$3,9) ')) {
+										if (!pg_prepare($db, 'new_user_insert', 'INSERT INTO piddle (username, email, passhash, "authFails") VALUES ($1,$2,$3,9) RETURNING id')) {
 			                  die("Can't prepare" . pg_last_error());
 			              }
 										$insertStatement = pg_execute($db, 'new_user_insert', array($username,$email,$hash));
+										$row = pg_fetch_assoc($insertStatement);
+										$id = $row['id'];
+										$regtoken = bin2hex(openssl_random_pseudo_bytes(32));
+
+										if (!pg_prepare($db, 'new_token_insert', 'INSERT INTO token (id, regtoken) VALUES ($1,$2) RETURNING id')) {
+												die("Can't prepare" . pg_last_error());
+										}
+										$insertToken = pg_execute($db, 'new_token_insert', array($id,$regtoken));
+										$regtokenlogstring = "http://localhost/reg.php?regtoken=".$regtoken;
+										#echo $regtokenlogstring;
 										#$insertStatement = "INSERT INTO piddle (username, email, passhash) VALUES ('" . $username . "','" . $email . "','" . $hash . "');";
 										//DO
 										//placeholder for insertion of key into activation table
@@ -84,7 +104,7 @@
 										echo "<script type='text/javascript'> alert('User Added!')</script>";
 										$logEntry = microtime()."- User ".$username." has registered.";
 										$file = '/var/www/log/registration.log';
-										$succ = file_put_contents($file,date(DATE_RFC2822).": User ".$username." has registered from ".$_SERVER['REMOTE_ADDR']."\n", FILE_APPEND);
+										$succ = file_put_contents($file,date(DATE_RFC2822).": User ".$username." has registered from ".$_SERVER['REMOTE_ADDR']." - registration link : ".$regtokenlogstring".\n", FILE_APPEND);
 									}
 
 								}
