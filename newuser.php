@@ -104,7 +104,7 @@
 										echo "<script type='text/javascript'> alert('User Added!')</script>";
 										$logEntry = microtime()."- User ".$username." has registered.";
 										$file = '/var/www/log/registration.log';
-										$succ = file_put_contents($file,date(DATE_RFC2822).": User ".$username." has registered from ".$_SERVER['REMOTE_ADDR']." - registration link : ".$regtokenlogstring".\n", FILE_APPEND);
+										$succ = file_put_contents($file,date(DATE_RFC2822).": User ".$username." has registered from ".$_SERVER['REMOTE_ADDR']." - registration link : ".$regtokenlogstring."\n", FILE_APPEND);
 									}
 
 								}
