@@ -15,9 +15,10 @@ if ((!empty($_GET))) //small check to ensure request was post, hopefully indicat
 	$result= pg_execute($db, 'new_token_insert', array($id));
 	$row = pg_fetch_assoc($result);
 	
-	echo "<br>".$row['regtoken']." - is what came out";
-	if (strcmp($row['regtoken'],$urltoken))
+	echo "<br>".$row['regtoken'];
+	if (strcmp(trim($row['regtoken']),$urltoken) == 0)
 	{
+		echo "entered if block";
 		if (!pg_prepare($db, 'authfail_update', 'UPDATE piddle SET "authFails" = 0 WHERE id = $1 '))
 		{
 			die("Can't prepare" . pg_last_error());
