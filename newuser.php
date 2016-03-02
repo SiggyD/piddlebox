@@ -95,8 +95,8 @@
 												die("Can't prepare" . pg_last_error());
 										}
 										$insertToken = pg_execute($db, 'new_token_insert', array($id,$regtoken));
-										$regtokenlogstring = "http://localhost/reg.php?regtoken=".$regtoken;
-										#echo $regtokenlogstring;
+										$regtokenlogstring = "http://localhost/reg.php?id=".$id."&regtoken=".$regtoken;
+										#echo urlencode($regtokenlogstring);
 										#$insertStatement = "INSERT INTO piddle (username, email, passhash) VALUES ('" . $username . "','" . $email . "','" . $hash . "');";
 										//DO
 										//placeholder for insertion of key into activation table
