@@ -72,16 +72,15 @@
 									{	
 										#$salt = base64_encode(openssl_random_pseudo_bytes(20));
 										$hash =  password_hash($password.$username,PASSWORD_DEFAULT);
-										#DEBUG INFO						
-										#echo "<br>username: ".$username;
-										#echo "<br>email: ".$email;
-										#echo "<br>hash: ".$hash;
-										#DEBUG INFO 
 										$db = pg_connect('host=localhost dbname=ssd user=sig password=ssd');
 										$insertStatement = "INSERT INTO piddle (username, email, passhash) VALUES ('" . $username . "','" . $email . "','" . $hash . "');";
 										//DO
+										//placeholder for insertion of key into activation table
 										$insertResult = pg_query($insertStatement);
 										echo "<script type='text/javascript'> alert('User Added!')</script>";
+										$logEntry = microtime()."- User ".$username." has registered.";
+										$file = '/var/www/log/registration.log';
+										$succ = file_put_contents($file,date(DATE_RFC2822).": User ".$username." has registered from ".$_SERVER['REMOTE_ADDR']."\n", FILE_APPEND);
 									}
 									
 								}
