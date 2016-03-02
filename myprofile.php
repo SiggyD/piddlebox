@@ -6,6 +6,7 @@
 	Assignment 2
 	March 3 2016
 -->
+<?php include 'auth.php' ?>
 <!DOCTYPE html>
 <html lang="en">
 	<head>
