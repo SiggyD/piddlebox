@@ -1,44 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-	
-	<head>
-		<meta charset="utf-8">
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<meta name="description" content="">
-		<meta name="author" content="">
-		<link rel="icon" href="../../favicon.ico">
-		
-		<title>Login</title>
-		<link href="../../dist/css/bootstrap.min.css" rel="stylesheet">
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-		<link href="../../assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
-		<link href="signin.css" rel="stylesheet">
-		<script src="../../assets/js/ie-emulation-modes-warning.js"></script>
-	</head>
-	<body>
-		<nav class="navbar navbar-inverse navbar-fixed-top">
-			<div class="container">
-				<div class="navbar-header">
-					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-						<span class="sr-only">Toggle navigation</span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-					</button>
-					<a class="navbar-brand" href="index.html">Secure Web Portal</a>
-				</div>
-				<div id="navbar" class="collapse navbar-collapse">
-					<ul class="nav navbar-nav">
-						<li class="active"><a href="index.html">Home</a></li>
-						<li><a href="login.php">Account</a></li>
-						<li><a href="newuser.php">Register</a></li>
-						<li><a href="myprofile.php">My Profile</a></li>
-						<li><a href="about.html">About</a></li>
-					</ul>
-				</div><!--/.nav-collapse -->
-			</div>
-		</nav>
+<?php 
+include 'header.php';	
+?>
 		
 		<div class="container">
 			<form class="form-signin" action="login.php" method="POST">
@@ -66,22 +28,36 @@
 			<?php
 			if ((!empty($_POST))) // remember these?
 				{ 
-					$db = pg_connect('host=localhost dbname=ssd user=sig password=ssd')
+					$db = pg_connect('host=localhost dbname=ssd user=omalax password=ssd')
 					or die("Can't connect to database".pg_last_error());
 					$email = $_POST["email"];
 					$password = $_POST["password"];	
-					$query = "select passhash, username from piddle where email like '".$email."';";
+					$query = "select * from piddle where email like '".$email."';";
 					$result = pg_query($db,$query);
 					$row = pg_fetch_assoc($result);
-					$storedpassword = $row['passhash'];
-					$user = $row['username'];
-					$hashed_password = password_hash($password.$user,PASSWORD_DEFAULT);
-					#your code is not getting down here
-					if (isset($_POST['password']) && password_verify($password.$user, $storedpassword)) {
-    						echo 'Password is valid!';
-						$_SESSION['user'] = $user;
-					} else {
-    						echo 'Invalid password.';
+					if ($row['authFails'] < 5){
+				
+						$storedpassword = $row['passhash'];
+						$user = $row['username'];
+						$hashed_password = password_hash($password.$user,PASSWORD_DEFAULT);
+						#your code is not getting down here
+						if (isset($_POST['password']) && password_verify($password.$user, $storedpassword)) {
+    							echo 'Password is valid!';
+							$_SESSION['user'] = $user;
+						} else {
+    							echo 'Invalid password.';
+							$authFailUpdate = "UPDATE PIDDLE SET \"authFails\" = \"authFails\"+1 WHERE username = '".$user."' RETURNING \"authFails\";";	
+							$updateResult = pg_query($db,$authFailUpdate);
+							$urow = pg_fetch_assoc($updateResult);
+							$fails = $urow['authFails'];
+							if ($fails = 5){
+								echo "Your Account Has Been Locked Due to 5 Login Failures.";							
+							} else {
+								echo "You have ".$fails."authorization failures";
+							}
+							}
+					    	} else {
+						echo 'Your Account is locked! Please request a password reset.';			
 					}
 				}
 			?>
