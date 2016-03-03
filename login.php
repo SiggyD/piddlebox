@@ -12,7 +12,8 @@
 		<input type="password" id="inputPassword" name="password" class="form-control" placeholder="Password" required>
 		<div class="checkbox">
 			<label>
-				<input type="checkbox" value="remember-me"> Remember me <br>New to Piddlebox? <a href=newuser.php> Register Here</a>
+				<!--<input type="checkbox" value="remember-me"> Remember me -->
+				<br>New to Piddlebox? <a href=newuser.php> Register Here</a>
 			</label>
 		</div>
 		<?php session_start();
@@ -29,65 +30,81 @@
 	<?php
 		if ((!empty($_POST))) // remember these?
 		{
-      $emaillog = $_POST['email'];
-      $file = '/var/www/log/auth.log';
+			$validemail = 1;
+			$emaillog = $_POST['email'];
+			$file = '/var/www/log/auth.log';
 			$db = pg_connect('host=localhost dbname=ssd user=sig password=ssd')
 			or die("Can't connect to database".pg_last_error());
-			if (!pg_prepare($db,'login_select', 'SELECT * FROM piddle WHERE email = $1')) {
+			if (!pg_prepare($db,'login_select', 'SELECT * FROM piddle WHERE email = $1')) 
+			{
 				die("Can't prepare" . pg_last_error());
 			}
+			
 			$email = $_POST["email"];
 			$password = $_POST["password"];
 			$result = pg_execute($db, 'login_select', array($email));
 			$row = pg_fetch_assoc($result);
-			if ($row['authFails'] < 5){
-
-				$storedpassword = $row['passhash'];
-				$username = $row['username'];
-				$hashed_password = password_hash($password.$username,PASSWORD_DEFAULT);
-				#your code is not getting down here
-				if (isset($_POST['password']) && password_verify($password.$username, $storedpassword)) {
-					echo 'Password is valid!';
-					$_SESSION['user'] = $username;
-					}
-					else
-					{
-						echo "<div class=\"alert alert-danger\">Invalid Password.</div>";
-						if (!pg_prepare($db, 'authfail_update', 'UPDATE piddle SET "authFails" = "authFails"+1 WHERE username = $1 RETURNING "authFails"')) {
-						die("Can't prepare" . pg_last_error());
-						if ((!empty($_POST))){
-						$succ = file_put_contents($file,date(DATE_RFC2822).": User has failed to authenticate with email  ".$emaillog." from ".$_SERVER['REMOTE_ADDR']."\n", FILE_APPEND);
-          }
-          }
-					#$updateResult = pg_query($db,$authFailUpdate);";
-					#echo "STUFFFFFFFFFFF: ".$updateResult;
-					$updateResult = pg_execute($db, 'authfail_update', array($username));
-					$urow = pg_fetch_assoc($updateResult);
-					$fails = $urow['authFails'];
-					#echo "FAILS:  ".$fails;
-					if ($fails == 5)
-					{
-						echo "<div class=\"alert alert-danger\">Your Account Has Been Locked Due to 5 Login Failures.</div>";
-						$succ = file_put_contents($file,date(DATE_RFC2822).":ACCOUNT LOCK:User has failed to authenticate with email  ".$emaillog." from ".$_SERVER['REMOTE_ADDR']."\n", FILE_APPEND);
-					}
-					else
-					{
-						#echo "You have ".$fails."authorization failures";
-            if ((!empty($_POST))){
-						echo "<div class=\"alert alert-danger\">You have ".$fails."authorization failures</div>";
-            $triesremaining = 5 - $fails;
-						$succ = file_put_contents($file,date(DATE_RFC2822).": User has failed to authenticate with email  ".$emaillog." from ".$_SERVER['REMOTE_ADDR']." - ".$triesremaining." tries remaining."."\n", FILE_APPEND);
-          }
-          }
+#db stuff is available
+			
+			# after user fetch 
+# check 1, user exists
+			if ($email == $row['email']) # check if user was returned
+			{
+				#continue
+			}
+			else
+			{
+				echo "<div class=\"alert alert-danger\">Invalid Username/Password.</div>";
+				exit();
+				#exit, no log
+			}
+			$storedpassword = $row['passhash'];
+			$username = $row['username'];
+			$fails = $row['authFails'];
+			$hashed_password = password_hash($password.$username,PASSWORD_DEFAULT);
+# check 2 user exits, check pass
+			if (isset($_POST['password']) && password_verify($password.$username, $storedpassword)) 
+			{
+				#continue
+			}
+			else #password has failed
+			{
+				echo "<div class=\"alert alert-danger\">Invalid Username/Password.</div>";
+				if (!pg_prepare($db, 'authfail_update', 'UPDATE piddle SET "authFails" = "authFails"+1 WHERE username = $1 RETURNING "authFails"')) 
+				{
+					die("Can't prepare" . pg_last_error());
 				}
-				} else {
-          if ((!empty($_POST))){ // remember these?
-
-          $succ = file_put_contents($file,date(DATE_RFC2822).":ACCOUNT LOCKED:User has failed to authenticate with email  ".$emaillog." from ".$_SERVER['REMOTE_ADDR']."\n", FILE_APPEND);
-
-				echo "<div class=\"alert alert-danger\">Your Account is locked! Please request a password reset.</div>";
-      }
-      }
+				file_put_contents($file,date(DATE_RFC2822).": User has failed to authenticate with email ".$emaillog." from ".$_SERVER['REMOTE_ADDR']." Number of tries remaining : ".(5 - $fails)."\n", FILE_APPEND);
+				if ($fails > 5)
+				{
+					$updateResult = pg_execute($db, 'authfail_update', array($username));
+				}
+				
+				#pretty sure this doesnt do anything
+				$urow = pg_fetch_assoc($updateResult);
+				$fails = $urow['authFails'];
+				#echo "<div class=\"alert alert-danger\">Auth failure number ".$fails."</div>";
+				exit();
+			}
+# check 3 user exits, password correct, check status
+			//save for the very end 
+			
+			if ($fails == 9)	# account is not active yet
+			{
+				echo "<div class=\"alert alert-danger\">Your account is inactive. Please follow the extra secret confirmation link.</div>";
+				file_put_contents($file,date(DATE_RFC2822).": User has failed to authenticate with email  ".$emaillog." from ".$_SERVER['REMOTE_ADDR']." - NOT ACTIVATED\n", FILE_APPEND);
+			}
+			else if ($fails == 5) # account has been auth locked :(
+			{
+				echo "<div class=\"alert alert-danger\">Your Account Has Been Locked Due to 5 Login Failures.</div>";
+				file_put_contents($file,date(DATE_RFC2822).": User has failed to authenticate with email  ".$emaillog." from ".$_SERVER['REMOTE_ADDR']." - ACCOUNT LOCK\n", FILE_APPEND);
+			}
+			else
+			{
+				$_SESSION['user'] = $username;
+				echo "<script type='text/javascript'> alert('You logged in. Enjoy the site.')</script>";
+				#header("Location: login.php"); # make this happen last...
+			}
 		}
 	?>
 </div>
