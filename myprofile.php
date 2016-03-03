@@ -24,13 +24,14 @@ $row = pg_fetch_assoc($result);
 $username = $row['username'];
 $email = $row['email'];
 $imagepath = $row['imagepath'];
+//end of populating form
 if (strlen($imagepath) < 5)
 {
 	$imagepath = "../media/default.jpeg";
 }
-
+echo "<br><br><br><br>";
 if ((!empty($_POST))) //small check to ensure request was post, hopefully indicating form data
-{
+{/**
 	$valid = 0;
 	//collect posted data & validate
 	//username		
@@ -56,29 +57,39 @@ if ((!empty($_POST))) //small check to ensure request was post, hopefully indica
 		echo "<div class=\"alert alert-danger\">Passwords must match.</div>";
 		$valid = 1; 
 	}
-	$target_dir = "/var/uploads/";
-	$newname = base64_encode(openssl_random_pseudo_bytes(8));
-	$target_file = $target_dir.basename($_FILES["fileToUpload"]["png"]);
+	* */
 	
-	$uploadOk = 1;
-	$imageFileType = pathinfo($target_file,PATHINFO_EXTENSION);
-	// Check if image file is a actual image or fake image
-	if(isset($_POST["submit"])) {
-    $check = getimagesize($_FILES["fileToUpload"]["tmp_name"]);
-    if($check !== false) {
-	echo "File is an image - " . $check["mime"] . ".";
-	$uploadOk = 1;
-    } else {
-        echo "File is not an image.";
-        $uploadOk = 0;
+	
+	//uploads
+	//if (!file_exists($_FILES["avatar"]["name"]))
+	//{
+	$location = "/var/uploads/";
+	$newname = bin2hex(openssl_random_pseudo_bytes(4));
+	#echo "THIS IS name: ".$newname;
+	
+	$location .= $newname.".jpg";
+	$tmp = $_FILES["filename"]["name"];
+	if ($_FILES['filename']['size'] > 100000)
+	{
+		echo "<div class=\"alert alert-danger\">Too many bytes. Try 100kb or less </div>";
     }
-}
+    else
+    {
+		move_uploaded_file($_FILES["filename"]["tmp_name"],$location);
+		$ret;
+		system( "exiftool -overwrite_original -all= ".$location, $ret);
+		if ($ret != 0)
+		{
+			system( "rm ".$location);
+		}
+	}
+
 	////////////////////////////////db do
 	if(false)
 	{	
 		//update
 	}
-	
+		
 }
 
 ?>
@@ -91,10 +102,14 @@ if ((!empty($_POST))) //small check to ensure request was post, hopefully indica
 		<div align="left" class="panel-body"><strong ">User Profile<strong></div>
 			
 			<table class="table-condensed"><tr><td>
-				<form class="registration-form" role="form" action="newuser.php" method="POST">
+				<form class="registration-form" role="form" action="myprofile.php" method="POST" enctype="multipart/form-data">
 					<div class="form-group">
 					<?php echo "Hi ".$_SESSION['user'].", this is your profile.";?>
 					</div>
+					<div align="center">
+						<img src="<?php echo $imagepath;?>" alt="This is you?" width="200" height="200" style="border: 5px solid bisque;margin: auto; border-radius:15px;">
+					</div>
+					</br>
 					<div class="form-group">
 						<input type="text" name="username" value="<?php echo $username;?>" class="form-control" id="username" >
 					</div>
@@ -107,16 +122,14 @@ if ((!empty($_POST))) //small check to ensure request was post, hopefully indica
 					<div class="form-group">
 						<input type="password" name="newConf" placeholder="Retype Password..." class="form-control" id="newConf">
 					</div>
-					<div align="center">
-						<img src="<?php echo $imagepath;?>" alt="This is you?" width="200" height="200" style="border: 5px solid bisque;margin: auto; border-radius:15px;">
-					</div>
+
 					<div class="form-group">
-						<input type="file" name="avatar" class="form-control" id="avatar">
+						<input type="file" name="filename" class="form-control" id="filename">
 					</div>
 					</br>
 					<input type="password" name="password" placeholder="Password..." class="form-control" id="password"required>
 					<br>
-					<button type="submit" class="btn btn-primary">Submit</button>
+					<button type="submit" class="btn btn-primary"  >Submit</button>
 				</form></td>
 				<td>
 					
