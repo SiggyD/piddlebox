@@ -12,7 +12,7 @@
 					<table class="table-condensed"><tr><td>
 						<form class="registration-form" role="form" action="newuser.php" method="POST">
 							<div class="form-group">
-								<input type="text" name="username" placeholder="Username..." class="form-control" id="username" required autofocus>
+								<input type="text" name="username" placeholder="Username..." class="form-control" id="username" pattern="[A-Za-z0-9]{2,20}" title="2 or more characters" required autofocus>
 							</div>
 							<div class="form-group">
 								<input type="email" name="email" placeholder="Email..." class="form-control" id="email"required>
@@ -65,6 +65,11 @@
 
 									$password = trim($_POST["password"]);
 									$passwordConf = trim($_POST["passwordConf"]);
+									if (!preg_match("/^....$/",$password))
+									{
+										echo "<div class=\"alert alert-danger\">Password must be at least 5 charcters</div>";
+										$valid = 1;
+									}
 									if (empty($password) || empty($passwordConf))
 									{
 										echo "<div class=\"alert alert-danger\">Password can not be empty.</div>";

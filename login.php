@@ -5,15 +5,15 @@
 <link href="signin.css" rel="stylesheet">
 <div class="container">
 	<form class="form-signin" action="login.php" method="POST">
-		<h2 class="form-signin-heading">Please sign in</h2>
+		<h2 class="form-signin-heading">Please Sign In</h2>
 		<label for="inputEmail" class="sr-only">Email address</label>
 		<input type="email" id="inputEmail" name="email" class="form-control" placeholder="Email address" required autofocus>
 		<label for="inputPassword" class="sr-only">Password</label>
 		<input type="password" id="inputPassword" name="password" class="form-control" placeholder="Password" required>
 		<div class="checkbox">
 			<label>
-				<!--<input type="checkbox" value="remember-me"> Remember me -->
-				<br>New to Piddlebox? <a href=newuser.php> Register Here</a>
+				<li><a href=newuser.php> Register Here</a></li>
+				<li><a href=forgot.php> Reset Password</a></li>
 			</label>
 		</div>
 		<?php session_start();
