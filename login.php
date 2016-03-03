@@ -75,7 +75,7 @@
 					die("Can't prepare" . pg_last_error());
 				}
 				file_put_contents($file,date(DATE_RFC2822).": User has failed to authenticate with email ".$emaillog." from ".$_SERVER['REMOTE_ADDR']." Number of tries remaining : ".(5 - $fails)."\n", FILE_APPEND);
-				if ($fails > 5)
+				if ($fails < 5)
 				{
 					$updateResult = pg_execute($db, 'authfail_update', array($username));
 				}
@@ -101,7 +101,7 @@
 			}
 			else
 			{
-				$_SESSION['user'] = $username;
+					$_SESSION['user'] = $username;
 				echo "<script type='text/javascript'> alert('You logged in. Enjoy the site.')</script>";
 				#header("Location: login.php"); # make this happen last...
 			}
