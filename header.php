@@ -22,7 +22,7 @@
 		<meta name="description" content="">
 		<meta name="author" content="">
 		<link rel="icon" href="../../favicon.ico">
-		<title>New User</title>
+		<title>Piddlebox</title>
 		<link href="../../dist/css/bootstrap.min.css" rel="stylesheet">
 		<link href="../../assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
 		<link href="starter-template.css" rel="stylesheet">

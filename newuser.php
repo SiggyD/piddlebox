@@ -46,9 +46,9 @@
 									//username
 									$username = trim($_POST["username"]);
 									$username = stripSpecial($username);
-									if (!preg_match("/^[a-zA-Z]{2,20}$/",$username))
+									if (!preg_match("/^[a-zA-Z]{3,20}$/",$username))
 									{
-										echo "<div class=\"alert alert-danger\">Username must be between 2-20 characters</div>";
+										echo "<div class=\"alert alert-danger\">Username must be between 3-20 characters</div>";
 										$valid = 1;
 									}
 									//email
@@ -65,7 +65,7 @@
 
 									$password = trim($_POST["password"]);
 									$passwordConf = trim($_POST["passwordConf"]);
-									if (!preg_match("/^....$/",$password))
+									if (preg_match("/^.{1,4}$/",$password))
 									{
 										echo "<div class=\"alert alert-danger\">Password must be at least 5 charcters</div>";
 										$valid = 1;

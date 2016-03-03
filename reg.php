@@ -34,7 +34,6 @@ if ((!empty($_GET))) //small check to ensure request was post, hopefully indicat
 	}
 
 	header('Location: index.php');
-	#header('Location: piddlebox/index.php');
 }
 else
 {

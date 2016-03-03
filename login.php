@@ -45,7 +45,6 @@
 			$result = pg_execute($db, 'login_select', array($email));
 			$row = pg_fetch_assoc($result);
 #db stuff is available
-			
 			# after user fetch 
 # check 1, user exists
 			if ($email == $row['email']) # check if user was returned

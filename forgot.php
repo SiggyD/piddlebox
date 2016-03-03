@@ -48,7 +48,7 @@
 			else
 			{
 				echo "<div class=\"alert alert-danger\">Invalid Username, this has been reported. </div>";
-				file_put_contents($file,date(DATE_RFC2822).": User attempted to reset unknown account from ".$_SERVER['REMOTE_ADDR']." - RESET FAIL\n", FILE_APPEND);
+				file_put_contents($file,date(DATE_RFC2822).": User attempted to reset unknown account from ".$_SERVER['REMOTE_ADDR']." - PASS RESET\n", FILE_APPEND);
 				exit();
 				#exit, no log
 			}
