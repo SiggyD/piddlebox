@@ -107,6 +107,7 @@
 			{
 				session_start();
 				$_SESSION['email'] = $email;
+				header('Location: myprofile.php');
 				echo "<script type='text/javascript'> alert('You logged in. Enjoy the site.')</script>";
 				#header("Location: login.php"); # make this happen last...
 			}
