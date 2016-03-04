@@ -4,21 +4,20 @@ include 'auth.php';
 //collect user stuff
 
 #get user from session
-$user = $_SESSION['user'];
+$email = $_SESSION['email'];
 $db = pg_connect('host=localhost dbname=ssd user=sig password=ssd')
 or die("Can't connect to database".pg_last_error());
 
-if (!pg_prepare($db,'login_select', 'SELECT * FROM piddle WHERE username = $1')) 
+if (!pg_prepare($db,'login_select', 'SELECT * FROM piddle WHERE email = $1')) 
 {
 	die("Can't prepare" . pg_last_error());
 }
 
-if (!pg_execute($db, 'login_select', array($user))) 
+if (!pg_execute($db, 'login_select', array($email))) 
 {
 	die("Can't result" . pg_last_error());
 }
-$result = pg_execute($db, 'login_select', array($user));
-#echo "<div class=\"alert alert-danger\">".$result."</div>";
+$result = pg_execute($db, 'login_select', array($email));
 $row = pg_fetch_assoc($result);
 $username = $row['username'];
 $email = $row['email'];
@@ -36,7 +35,7 @@ if (!empty($_POST)) //changes submitted
 	$go = true;
 	# check pass
 	$password = $_POST["password"];
-	if ( password_verify($password.$username, $storedpassword)) 
+	if ( password_verify($password.$email, $storedpassword)) 
 	{
 		#continue
 		$newusername = $_POST["username"]; #will be old username if not touched
@@ -64,7 +63,7 @@ if (!empty($_POST)) //changes submitted
 		}
 		else
 		{
-			$newpassword =  password_hash($newpassword.$username,PASSWORD_DEFAULT);
+			$newpassword =  password_hash($newpassword.$email,PASSWORD_DEFAULT);
 		}
 		
 		if (!empty($_FILES['filename']['name'])) #check if file exists
@@ -97,9 +96,9 @@ if (!empty($_POST)) //changes submitted
 	if($go == true)
 	{	
 		$db = pg_connect('host=localhost dbname=ssd user=sig password=ssd');
-		if (pg_prepare($db, 'profile_update', 'UPDATE piddle SET username = $1, passhash = $2, imagepath = $3  WHERE username = $4 ')) 
+		if (pg_prepare($db, 'profile_update', 'UPDATE piddle SET username = $1, passhash = $2, imagepath = $3  WHERE email = $4 ')) 
 		{
-			$insertStatement = pg_execute($db, 'profile_update', array($newusername,$newpassword,$newname,$username));                  
+			$insertStatement = pg_execute($db, 'profile_update', array($newusername,$newpassword,$newname,$email));                  
 		}
 		
 	}
@@ -109,7 +108,7 @@ if (!empty($_POST)) //changes submitted
 <div class="container">
 	<div class="starter-template">
 		
-		<p class="lead"><?php echo "Hi ".$_SESSION['user'].", this is your profile.";?></p>
+		<p class="lead"><?php echo "Hi ".$row['username'].", this is your profile.";?></p>
 	</div>
 	<div align="center" class="panel panel-primary">
 		<div align="left" class="panel-body"><strong ">User Profile<strong></div>
