@@ -86,7 +86,7 @@
 									if($valid == 0)
 									{
 										#$salt = base64_encode(openssl_random_pseudo_bytes(20));
-										$hash =  password_hash($password.$username,PASSWORD_DEFAULT);
+										$hash =  password_hash($password.$email,PASSWORD_DEFAULT);
 										$db = pg_connect('host=localhost dbname=ssd user=sig password=ssd');
 										if (!pg_prepare($db, 'new_user_insert', 'INSERT INTO piddle (username, email, passhash, "authFails") VALUES ($1,$2,$3,9) RETURNING id')) {
 			                  die("Can't prepare" . pg_last_error());
