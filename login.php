@@ -1,5 +1,6 @@
 <?php
 	include 'header.php';
+  $token = bin2hex(openssl_random_pseudo_bytes(32));
 ?>
 <!-- Custom styles for this template -->
 <link href="signin.css" rel="stylesheet">
@@ -16,11 +17,15 @@
 				<li><a href=forgot.php> Reset Password</a></li>
 			</label>
 		</div>
-		<?php session_start();
+		<?php #session_start();
 			if (!isset($_SESSION['token'])) {
-				$_SESSION['token'] = bin2hex(openssl_random_pseudo_bytes(32));
+				$_SESSION['token'] = $token;
 				} else {
 				$token = $_SESSION['token'];
+        if (isset($_POST['token']) && ($_POST['token'] != $token)) {
+          echo "<div class=\"alert alert-danger\">Invalid csrftoken. This event has been logged.</div>";
+          exit();
+        }
 			}
 			#echo $token;
 		?>
@@ -58,11 +63,11 @@
 				#exit, no log
 			}
 			$storedpassword = $row['passhash'];
-			$username = $row['username'];
+			#$username = $row['username'];
 			$fails = $row['authFails'];
-			$hashed_password = password_hash($password.$username,PASSWORD_DEFAULT);
+			$hashed_password = password_hash($password.$email,PASSWORD_DEFAULT);
 # check 2 user exits, check pass
-			if (isset($_POST['password']) && password_verify($password.$username, $storedpassword)) 
+			if (isset($_POST['password']) && password_verify($password.$email, $storedpassword)) 
 			{
 				#continue
 			}
