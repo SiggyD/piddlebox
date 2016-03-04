@@ -7,7 +7,7 @@ if ((!empty($_GET))) //small check to ensure request was post, hopefully indicat
 	#$urltoken = urlencode($urltoken);
 	if (strlen( $urltoken) < 15 )
 	{
-		
+		header('Location: index.php');
 	}
 	
 	$db = pg_connect('host=localhost dbname=ssd user=sig password=ssd');

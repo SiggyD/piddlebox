@@ -1,7 +1,6 @@
 <?php 
 include 'header.php';
 include 'auth.php';
-$valid;
 //collect user stuff
 
 #get user from session
@@ -23,80 +22,94 @@ $result = pg_execute($db, 'login_select', array($user));
 $row = pg_fetch_assoc($result);
 $username = $row['username'];
 $email = $row['email'];
-$imagepath = $row['imagepath'];
+$imagepath = "../uploads/".$row['imagepath'];
+$storedpassword = $row['passhash'];
 //end of populating form
-if (strlen($imagepath) < 5)
+if (strcmp($imagepath,"../uploads/") == 0)
 {
-	$imagepath = "../media/default.jpeg";
+	$imagepath = "../uploads/default.jpeg";
 }
 echo "<br><br><br><br>";
-if ((!empty($_POST))) //small check to ensure request was post, hopefully indicating form data
-{/**
-	$valid = 0;
-	//collect posted data & validate
-	//username		
-	$username = trim($_POST["username"]);
-	$username = stripSpecial($username);
-	if (!preg_match("/^[a-zA-Z]{3,20}$/",$username))
+
+if (!empty($_POST)) //changes submitted
+{
+	$go = true;
+	# check pass
+	$password = $_POST["password"];
+	if ( password_verify($password.$username, $storedpassword)) 
 	{
-		echo "<div class=\"alert alert-danger\">Username must be between 2-20 characters</div>";
-		$valid = 1;
-	}
-	//password
-	
-	$password = trim($_POST["password"]);
-	$passwordConf = trim($_POST["passwordConf"]);
-	if (empty($password) || empty($passwordConf)) 
-	{
-		echo "<div class=\"alert alert-danger\">Password can not be empty.</div>";
-		$valid = 1; 
-	}
-	
-	if (strcmp($newpassword,$newConf) != 0)
-	{
-		echo "<div class=\"alert alert-danger\">Passwords must match.</div>";
-		$valid = 1; 
-	}
-	* */
-	
-	
-	//uploads
-	//if (!file_exists($_FILES["avatar"]["name"]))
-	//{
-	$location = "/var/uploads/";
-	$newname = bin2hex(openssl_random_pseudo_bytes(4));
-	#echo "THIS IS name: ".$newname;
-	
-	$location .= $newname.".jpg";
-	$tmp = $_FILES["filename"]["name"];
-	if ($_FILES['filename']['size'] > 100000)
-	{
-		echo "<div class=\"alert alert-danger\">Too many bytes. Try 100kb or less </div>";
-    }
-    else
-    {
-		move_uploaded_file($_FILES["filename"]["tmp_name"],$location);
-		$ret;
-		system( "exiftool -overwrite_original -all= ".$location, $ret);
-		if ($ret != 0)
+		#continue
+		$newusername = $_POST["username"]; #will be old username if not touched
+		if (preg_match("/^[a-zA-Z]{3,20}$/",$newusername))
 		{
-			system( "rm ".$location);
+			echo "<div class=\"alert alert-danger\">Username must be between 3-20 characters</div>";
+			$go = false;
+		}
+		$newpassword = $_POST["newpassword"]; 
+		$newConf = $_POST["newConf"]; #will be old username if not touched
+		if (strcmp($newpassword,$newConf) != 0)
+		{
+			echo "<div class=\"alert alert-danger\">New passwords didn't match. </div>";
+			$go = false;
+		}
+		
+		if (strlen($newpassword) < 5 && strlen($newpassword) != 0)
+		{
+			echo "<div class=\"alert alert-danger\">New password must be at least 5 characters.</div>";
+			$go = false;
+		}
+		else if (strlen($newpassword) == 0 )
+		{
+			$newpassword = $storedpassword;
+		}
+		else
+		{
+			$newpassword =  password_hash($newpassword.$username,PASSWORD_DEFAULT);
+		}
+		
+		if (!empty($_FILES['filename']['name'])) #check if file exists
+		{
+			$location = "/var/uploads/";
+			$newname = bin2hex(openssl_random_pseudo_bytes(4)).".jpg";
+			$location .= $newname;
+			$tmp = $_FILES["filename"]["name"];
+			if ($_FILES['filename']['size'] > 100000) # too much file
+			{
+				echo "<div class=\"alert alert-danger\">Too many bytes. Try 100kb or less </div>";
+			}
+			else # File is aight
+			{
+				move_uploaded_file($_FILES["filename"]["tmp_name"],$location);
+				$ret=0;
+				system( "exiftool -overwrite_original -all= ".$location, $ret);
+				$imagepath = "../uploads/".$newname;
+				if ($ret != 0) #Something went wrong. DESTROY.
+				{
+					system("rm ".$location);
+				}
+			}
 		}
 	}
-
-	////////////////////////////////db do
-	if(false)
-	{	
-		//update
+	else
+	{
+		echo "<div class=\"alert alert-danger\">Failed to reauthenticate. </div>";
 	}
+	if($go == true)
+	{	
+		$db = pg_connect('host=localhost dbname=ssd user=sig password=ssd');
+		if (pg_prepare($db, 'profile_update', 'UPDATE piddle SET username = $1, passhash = $2, imagepath = $3  WHERE username = $4 ')) 
+		{
+			$insertStatement = pg_execute($db, 'profile_update', array($newusername,$newpassword,$newname,$username));                  
+		}
 		
-}
+	}
 
+}
 ?>
 <div class="container">
 	<div class="starter-template">
 		
-		<p class="lead">Your Profile</p>
+		<p class="lead"><?php echo "Hi ".$_SESSION['user'].", this is your profile.";?></p>
 	</div>
 	<div align="center" class="panel panel-primary">
 		<div align="left" class="panel-body"><strong ">User Profile<strong></div>
@@ -104,7 +117,7 @@ if ((!empty($_POST))) //small check to ensure request was post, hopefully indica
 			<table class="table-condensed"><tr><td>
 				<form class="registration-form" role="form" action="myprofile.php" method="POST" enctype="multipart/form-data">
 					<div class="form-group">
-					<?php echo "Hi ".$_SESSION['user'].", this is your profile.";?>
+					
 					</div>
 					<div align="center">
 						<img src="<?php echo $imagepath;?>" alt="This is you?" width="200" height="200" style="border: 5px solid bisque;margin: auto; border-radius:15px;">
