@@ -12,13 +12,13 @@ if ((!empty($_GET))) //small check to ensure request was post, hopefully indicat
 	}
 
 	$db = pg_connect('host=localhost dbname=ssd user=omalax password=ssd');
-	if (!pg_prepare($db, 'lock_token_select', 'SELECT piddle.username, token.locktoken, piddle."authFails" from piddle, token WHERE piddle.id = $1 AND token.id = $1'))
+	if (!pg_prepare($db, 'lock_token_select', 'SELECT piddle.email, token.locktoken, piddle."authFails" from piddle, token WHERE piddle.id = $1 AND token.id = $1'))
 	{
 		die("Can't prepare" . pg_last_error());
 	}
 	$result= pg_execute($db, 'lock_token_select', array($id));
 	$row = pg_fetch_assoc($result);
-  $username = $row['username'];
+  $email = $row['email'];
   $authFails = $row['authFails'];
 	# unlock account
 	if (strcmp(trim($row['locktoken']),$urltoken) == 0)
@@ -120,7 +120,7 @@ else
 									if($valid == 0)
 									{
 										#$salt = base64_encode(openssl_random_pseudo_bytes(20));
-										$hash =  password_hash($password.$username,PASSWORD_DEFAULT);
+										$hash =  password_hash($password.$email,PASSWORD_DEFAULT);
 										$db = pg_connect('host=localhost dbname=ssd user=omalax password=ssd');
 										if (!pg_prepare($db, 'new_hash_update', 'UPDATE piddle SET passhash = $1 WHERE id = $2')) {
 			                  die("Can't prepare" . pg_last_error());
@@ -146,7 +146,7 @@ else
 										#$row = pg_fetch_assoc($insertStatement);
                     #echo pg_fetch_result($insertStatement);
                     $file = '/var/www/log/security.log';
-									  $succ = file_put_contents($file,date(DATE_RFC2822).": User ".$username." has reset password from ".$_SERVER['REMOTE_ADDR']."\n", FILE_APPEND);
+									  $succ = file_put_contents($file,date(DATE_RFC2822).": User ".$email." has reset password from ".$_SERVER['REMOTE_ADDR']."\n", FILE_APPEND);
 									  echo "<script type='text/javascript'> alert('Password Changed!')</script>";
                    header('Location: login.php');
                   }
