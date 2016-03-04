@@ -1,4 +1,6 @@
-<?php include 'header.php';?>
+<?php include 'header.php';
+$token = bin2hex(openssl_random_pseudo_bytes(32));
+?>
 
 		<div class="container">
 
@@ -23,11 +25,15 @@
 							<div class="form-group">
 								<input type="password" name="passwordConf" placeholder="Retype Password..." class="form-control" id="passwordConf"required>
 							</div>
-							<?php session_start();
+							<?php #session_start();
 								if (!isset($_SESSION['token'])) {
-									$_SESSION['token'] = bin2hex(openssl_random_pseudo_bytes(32));
+									$_SESSION['token'] = $token;
 									} else {
 									$token = $_SESSION['token'];
+					        if (isset($_POST['token']) && ($_POST['token'] != $token)) {
+					          echo "<div class=\"alert alert-danger\">Invalid csrftoken. This event has been logged.</div>";
+					          exit();
+					        }
 								}
 								#echo $token;
 							?>
@@ -106,6 +112,7 @@
 										//DO
 										//placeholder for insertion of key into activation table
 										#$insertResult = pg_query($insertStatement);
+										
 										echo "<script type='text/javascript'> alert('User Added!')</script>";
 										$logEntry = microtime()."- User ".$username." has registered.";
 										$file = '/var/www/log/registration.log';
@@ -137,4 +144,3 @@
 						</td></tr></table></div>
 				</body>
 			</html>
-

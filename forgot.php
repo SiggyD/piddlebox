@@ -1,5 +1,6 @@
 <?php
 	include 'header.php';
+	  $token = bin2hex(openssl_random_pseudo_bytes(32));
 ?>
 <!-- Custom styles for this template -->
 <link href="signin.css" rel="stylesheet">
@@ -8,11 +9,15 @@
 		<h2 class="form-signin-heading">Password Reset</h2>
 		<label for="inputEmail" class="sr-only">Email address</label>
 		<input type="email" id="inputEmail" name="email" class="form-control" placeholder="Email address" required autofocus>
-		<?php session_start();
+		<?php #session_start();
 			if (!isset($_SESSION['token'])) {
-				$_SESSION['token'] = bin2hex(openssl_random_pseudo_bytes(32));
+				$_SESSION['token'] = $token;
 				} else {
 				$token = $_SESSION['token'];
+        if (isset($_POST['token']) && ($_POST['token'] != $token)) {
+          echo "<div class=\"alert alert-danger\">Invalid csrftoken. This event has been logged.</div>";
+          exit();
+        }
 			}
 			#echo $token;
 		?>
@@ -75,4 +80,3 @@
 <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
 </body>
 </html>
-
