@@ -58,7 +58,7 @@
 				}
 				$insertToken = pg_execute($db, 'new_token_insert', array($passtoken, $id));
 				#$passtokenlogstring = "https://piddlebox.xyz/reg.php?id=".$id."&regtoken=".$passtoken;
-				$passtokenlogstring = "http://localhost/reset.php?id=".$id."&locktoken=".$passtoken;
+				$passtokenlogstring = "https://www.piddlebox.xyz/reset.php?id=".$id."&locktoken=".$passtoken;
 				file_put_contents('/var/www/log/security.log',date(DATE_RFC2822).": User ".$row['username']." reset password from ".$_SERVER['REMOTE_ADDR']." - RESET LINK - ".$passtokenlogstring."\n", FILE_APPEND);
 				echo "<script type='text/javascript'> alert('Reset Sent!')</script>";
 			}
