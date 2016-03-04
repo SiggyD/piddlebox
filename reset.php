@@ -12,13 +12,14 @@ if ((!empty($_GET))) //small check to ensure request was post, hopefully indicat
 	}
 
 	$db = pg_connect('host=localhost dbname=ssd user=omalax password=ssd');
-	if (!pg_prepare($db, 'lock_token_select', 'SELECT piddle.username, token.locktoken from piddle, token WHERE piddle.id = $1 AND token.id = $1'))
+	if (!pg_prepare($db, 'lock_token_select', 'SELECT piddle.username, token.locktoken, piddle."authFails" from piddle, token WHERE piddle.id = $1 AND token.id = $1'))
 	{
 		die("Can't prepare" . pg_last_error());
 	}
 	$result= pg_execute($db, 'lock_token_select', array($id));
 	$row = pg_fetch_assoc($result);
   $username = $row['username'];
+  $authFails = $row['authFails'];
 	# unlock account
 	if (strcmp(trim($row['locktoken']),$urltoken) == 0)
 	{
@@ -128,14 +129,29 @@ else
                       die("Can't reset".pg_last_error());
                     } else {
 										$insertStatement = pg_execute($db, 'new_hash_update', array($hash,$id));
+                    ///////////////////////////if not active
+                    if (!pg_prepare($db, 'new_auth_update', 'UPDATE piddle SET "authFails" = 0 WHERE id = $1')) {
+                        die("Can't prepare" . pg_last_error());
+                    }
+                    #echo $authFails;
+                    if($authFails != 9) {
+                    if(!pg_execute($db, 'new_auth_update', array($id))) {
+                      die("Can't reset".pg_last_error());
+                    } else {
+                    $updateStatement = pg_execute($db, 'new_hash_update', array($id));
+                  }
+                }
+
+                    ///////////////
 										#$row = pg_fetch_assoc($insertStatement);
-                    echo pg_fetch_result($insertStatement);
+                    #echo pg_fetch_result($insertStatement);
+                    $file = '/var/www/log/security.log';
+									  $succ = file_put_contents($file,date(DATE_RFC2822).": User ".$username." has reset password from ".$_SERVER['REMOTE_ADDR']."\n", FILE_APPEND);
 									  echo "<script type='text/javascript'> alert('Password Changed!')</script>";
                    header('Location: login.php');
                   }
 										#$logEntry = microtime()."- User ".$username." has registered.";
-										$file = '/var/www/log/security.log';
-									  $succ = file_put_contents($file,date(DATE_RFC2822).": User ".$username." has reset password from ".$_SERVER['REMOTE_ADDR']"."\n", FILE_APPEND);
+
 									}
 
 								}
@@ -163,3 +179,4 @@ else
 						</td></tr></table></div>
 				</body>
 			</html>
+
