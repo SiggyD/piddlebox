@@ -28,6 +28,7 @@ if (strcmp($imagepath,"../uploads/") == 0)
 {
 	$imagepath = "../uploads/default.jpeg";
 }
+$newname = $imagepath;
 echo "<br><br><br><br>";
 
 if (!empty($_POST)) //changes submitted
@@ -39,7 +40,7 @@ if (!empty($_POST)) //changes submitted
 	{
 		#continue
 		$newusername = $_POST["username"]; #will be old username if not touched
-		if (preg_match("/^[a-zA-Z]{3,20}$/",$newusername))
+		if (!preg_match("/^[a-zA-Z]{3,20}$/",$newusername))
 		{
 			echo "<div class=\"alert alert-danger\">Username must be between 3-20 characters</div>";
 			$go = false;
@@ -66,7 +67,7 @@ if (!empty($_POST)) //changes submitted
 			$newpassword =  password_hash($newpassword.$email,PASSWORD_DEFAULT);
 		}
 		
-		if (!empty($_FILES['filename']['name'])) #check if file exists
+		if (!empty($_FILES['filename']['name']) && $go == true) #check if file exists
 		{
 			$location = "/var/uploads/";
 			$newname = bin2hex(openssl_random_pseudo_bytes(4)).".jpg";
