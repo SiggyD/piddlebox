@@ -11,7 +11,7 @@ if ((!empty($_GET))) //small check to ensure request was post, hopefully indicat
 
 	}
 
-	$db = pg_connect('host=localhost dbname=ssd user=omalax password=ssd');
+	$db = pg_connect('host=localhost dbname=ssd user=sig password=ssd');
 	if (!pg_prepare($db, 'lock_token_select', 'SELECT piddle.email, token.locktoken, piddle."authFails" from piddle, token WHERE piddle.id = $1 AND token.id = $1'))
 	{
 		die("Can't prepare" . pg_last_error());
@@ -121,7 +121,7 @@ else
 									{
 										#$salt = base64_encode(openssl_random_pseudo_bytes(20));
 										$hash =  password_hash($password.$email,PASSWORD_DEFAULT);
-										$db = pg_connect('host=localhost dbname=ssd user=omalax password=ssd');
+										#$db = pg_connect('host=localhost dbname=ssd user=sig password=ssd');
 										if (!pg_prepare($db, 'new_hash_update', 'UPDATE piddle SET passhash = $1 WHERE id = $2')) {
 			                  die("Can't prepare" . pg_last_error());
 			              }

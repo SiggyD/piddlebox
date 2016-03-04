@@ -26,7 +26,7 @@
 		{
 			$emaillog = $_POST['email'];
 			$file = '/var/www/log/security.log';
-			$db = pg_connect('host=localhost dbname=ssd user=omalax password=ssd')
+			$db = pg_connect('host=localhost dbname=ssd user=sig password=ssd')
 			or die("Can't connect to database".pg_last_error());
 			if (!pg_prepare($db,'login_select', 'SELECT * FROM piddle WHERE email = $1'))
 			{
@@ -43,7 +43,7 @@
 			if ($email == $row['email']) # check if user was returned
 			{
 				#continue
-				$db = pg_connect('host=localhost dbname=ssd user=omalax password=ssd');
+				#$db = pg_connect('host=localhost dbname=ssd user=omalax password=ssd');
 				if (!pg_prepare($db, 'get_id', 'SELECT id FROM piddle WHERE email = $1')) {
 						die("Can't prepare" . pg_last_error());
 				}
